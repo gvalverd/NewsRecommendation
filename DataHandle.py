@@ -6,7 +6,7 @@ import numpy
 import jieba
 
 def divideData(allFile, trainningFile, testFile):
-	separateTime = int(time.mktime(time.strptime('2014-3-21 0:0:0', '%Y-%m-%d %H:%M:%S')))
+	separateTime = int(time.mktime(time.strptime(GlobalConfig.dataStartTime, '%Y-%m-%d %H:%M:%S')))
 	trainningList = []
 	testList = []
 	with open(allFile, "r") as fr:
@@ -30,24 +30,76 @@ def divideData(allFile, trainningFile, testFile):
 		for aLine in testList:
 			fw.write("\t".join(aLine))
 	return trainningList, testList
-	
-def divideWords(trainningFile):
-	wordsList = []
-	with open(trainningFile, "r") as fr:
-		trainningList = fr.readlines()
 
-		for aRecord in trainningList:
+def divideWords(trainningFile):
+	wordsList = {}
+	stopWord = getStopWord()
+	newsWordVector = {}
+	newsKeyWord = {}
+	with open(trainningFile, "r") as fr:
+		i = 0
+		while True:
+			i += 1
+			aRecord = fr.readline()
+			aRecord = fr.readline()
+			aRecord = fr.readline()
+			if aRecord == "":
+				break
 			aRecord = aRecord.split("\t")
-			seg_list = jieba.cut(aRecord[-2], cut_all=False)
-			#print len(list(seg_list))
-			seg_list = set(seg_list)
-			print len(seg_list)
-			print "/".join(seg_list).encode("utf-8")
-			#print str(seg_list)
+
+			if (aRecord[-2].strip() == "NULL" and aRecord[-1].strip() == "NULL"):
+				continue
+			
+			#print aRecord
+			if aRecord[1] in newsKeyWord.keys():
+				for item in newsKeyWord[aRecord[1]]:
+					wordsList[item] = wordsList.get(item, 0) + 1.0
+				continue
+			tempWordList = jieba.cut(aRecord[-3].strip() + aRecord[-2].strip(), cut_all=False)
+			keyWord = {}
+			for word in tempWordList:
+				word = word.strip().encode("utf-8")
+				print word
+				if word.isdigit() or word == "" or word in stopWord:
+					continue
+				print word
+				tf = keyWord.get(word, 0)
+				if not tf:
+					keyWord[word] = 1.0
+					wordsList[word] = wordsList.get(word, 0) + 1.0 #doc frequency
+				else:
+					keyWord[word] = tf + 1.0
+				#keyWord[word] = keyWord.get(word, 0) + 1.0
+			newsKeyWord[aRecord[1]] = keyWord
+
+			#wordsList = wordsList | set(keyWord.keys())
+			#wordsList = sorted(wordsList.iteritems(), key= lambda d:d[1], reverse=True)
+			print i,len(keyWord.keys()),len(wordsList)
+			#print wordList
 			break
+	wordsList = sorted(wordsList.iteritems(), key= lambda d:d[1], reverse=True)
+	print len(wordsList),len(newsKeyWord)
+	print wordsList[:10]
+	for i in range(len(wordsList)):
+		if wordsList[i][1] == 1:
+			print i
+			break
+	print wordsList[20000]
+			
+
+def getStopWord():
+	stopWord = []
+	with open(GlobalConfig.stopWord) as fw:
+		stopWord = fw.readlines()
+		#stopWord = set(stopWord)
+		#print len(stopWord)
+		stopWord = [element[:-1] for element in stopWord]  #"-1" means removing the '\n'
+	#print len(set(stopWord))
+	return set(stopWord)
 
 def newDocsInLastTen(trainningList, testList):
 	trainningDocs = set([i[1] for i in trainningList])
+	print "All users:%d" % len(set([i[0] for i in trainningList]))
 	#print [(for j in set([ i[1] for i in testList]))]
 	print "All different trainning docs:%d" % len(trainningDocs)
 	docsNotIn = []
@@ -65,29 +117,15 @@ def newDocsInLastTen(trainningList, testList):
 	All different test docs:1381
 	'''
 
-def test():
-	'''
-	print GlobalConfig.allData
-	print time.time()
-	print time.gmtime(1394463264)
-	print int(time.mktime(time.strptime('2014-3-4 3:2:3', '%Y-%m-%d %H:%M:%S')))
-	'''
-	a = [ [1, 2, 3], [1, 5, 6], [7, 8, 9]]
-	c = [1, 3, 4]
-	b = []
-	b.append(1)
-	print "All different docs:%d" % len(b)
-	
 
 if __name__ == "__main__":
 	#help(sorted)
+	'''
 	trainningList, testList = divideData(GlobalConfig.allData, GlobalConfig.trainningData, GlobalConfig.testData)
 	newDocsInLastTen(trainningList, testList)
 	'''
-	tt = [["3",3,3],["1",1,1],["2",2,2]]
-	tt = sorted(tt, key=lambda x:int(x[0]))
-	'''
-	#divideWords(GlobalConfig.allData)
+	#test()
+	divideWords(GlobalConfig.trainningData)
 	#print tt
 	#pass
 	#test()
