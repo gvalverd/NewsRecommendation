@@ -1,9 +1,46 @@
+#coding=utf-8
+import numpy
+
+def changeDict(dd, ee, ff):
+	dd['a'] = 1
+	ee = 3
+	ff[0, 0] = 100
+
 def test():
-	
+
+	aa = numpy.zeros((3,3))
+	aa = aa + 2
+	aa = aa ** 2 
+	aa[0, 1] = 5
+	print aa
+	print max(aa[:,1])
+
+	'''
+	dic = {'a': 3}
+	print dic
+	a = 4
+	ff = numpy.zeros((3,3))
+	print ff
+	changeDict(dic, a, ff)
+	print dic, a, ff
+	'''
+
+	'''
+	a = numpy.zeros((2,3))
+	print 1/3
+	a[0, 0] = 1.0/3
+	print a.dtype,a
+	'''
+
+	'''
 	dic = {'a':31, 'bc':5, 'c':3, 'asd':4, 'aa':74, 'd':0}
+	for item in dic:
+		print dic[item]
+	del dic["a"]
+	print dic
 	dic = sorted(dic.iteritems(), key=lambda d:d[1], reverse = True)
 	print dic[0]
-	
+	'''
 
 
 	'''
@@ -56,4 +93,6 @@ def test():
 	b.append(1)
 	print "All different docs:%d" % len(b)
 	'''
+if __name__ == "__main__":
+	test()
 	

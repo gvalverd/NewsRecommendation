@@ -34,39 +34,53 @@ def divideData(allFile, trainningFile, testFile):
 def divideWords(trainningFile):
 	wordsList = {}
 	stopWord = getStopWord()
-	newsWordVector = {}
 	newsKeyWord = {}
+	userNewsMap = []
+	docNum = 0
 	with open(trainningFile, "r") as fr:
-		i = 0
 		while True:
-			i += 1
+			docNum += 1
+			'''
+			if docNum > 10:
+				break 
+			'''
+			
 			aRecord = fr.readline()
-			aRecord = fr.readline()
-			aRecord = fr.readline()
+			#aRecord = fr.readline()
+			#aRecord = fr.readline()
 			if aRecord == "":
 				break
 			aRecord = aRecord.split("\t")
-
+			
 			if (aRecord[-2].strip() == "NULL" and aRecord[-1].strip() == "NULL"):
 				continue
+			#userNewsMap[aRecord[0]] = aRecord[1] # A user can read lots of news can't 
+			userNewsMap.append((aRecord[0], aRecord[1]))
 			
 			#print aRecord
 			if aRecord[1] in newsKeyWord.keys():
 				for item in newsKeyWord[aRecord[1]]:
-					wordsList[item] = wordsList.get(item, 0) + 1.0
+					wordsList[item][1] = wordsList[item][1] + 1.0
 				continue
 			tempWordList = jieba.cut(aRecord[-3].strip() + aRecord[-2].strip(), cut_all=False)
 			keyWord = {}
 			for word in tempWordList:
 				word = word.strip().encode("utf-8")
-				print word
+				#print word
 				if word.isdigit() or word == "" or word in stopWord:
 					continue
-				print word
+				#print word
 				tf = keyWord.get(word, 0)
 				if not tf:
 					keyWord[word] = 1.0
-					wordsList[word] = wordsList.get(word, 0) + 1.0 #doc frequency
+					
+					if word in wordsList:
+						wordsList[word][1] = wordsList[word][1] + 1.0
+					else:
+						wordsList[word] = [0, 1.0]
+						#wordNo = wordNo + 1 # Record the key word's index
+					
+					#wordsList[word][1] = wordsList.get(word, 0)[1] + 1.0 #doc frequency
 				else:
 					keyWord[word] = tf + 1.0
 				#keyWord[word] = keyWord.get(word, 0) + 1.0
@@ -74,17 +88,28 @@ def divideWords(trainningFile):
 
 			#wordsList = wordsList | set(keyWord.keys())
 			#wordsList = sorted(wordsList.iteritems(), key= lambda d:d[1], reverse=True)
-			print i,len(keyWord.keys()),len(wordsList)
+			#print docNum,len(keyWord.keys()),len(wordsList)
+			print "divideData %d" % docNum
 			#print wordList
+			#break
+	tempWordsList = sorted(wordsList.iteritems(), key= lambda d:d[1][1], reverse=True)
+	#print len(tempWordsList),len(newsKeyWord)
+	# Attention tempWordsList is list [("****",[wordNo, docF])]
+	#print tempWordsList[:10]
+	for i in range(len(tempWordsList)):
+		if tempWordsList[i][1][1] >= docNum * GlobalConfig.keyWordGiveupRate:
+			del wordsList[tempWordsList[i][0]] # del the key word no is also changed
+		else:
 			break
-	wordsList = sorted(wordsList.iteritems(), key= lambda d:d[1], reverse=True)
-	print len(wordsList),len(newsKeyWord)
-	print wordsList[:10]
-	for i in range(len(wordsList)):
-		if wordsList[i][1] == 1:
-			print i
-			break
-	print wordsList[20000]
+	wordNo = 0
+	for word in wordsList:
+		wordsList[word][0] = wordNo
+		wordNo += 1
+	print "Key words num: %d" % len(wordsList)
+	print "News lenth: %d " % len(userNewsMap)
+
+	#print newsKeyWord["100649537"]
+	return (docNum, wordsList, newsKeyWord, userNewsMap)
 			
 
 def getStopWord():
@@ -120,12 +145,12 @@ def newDocsInLastTen(trainningList, testList):
 
 if __name__ == "__main__":
 	#help(sorted)
-	'''
+	
 	trainningList, testList = divideData(GlobalConfig.allData, GlobalConfig.trainningData, GlobalConfig.testData)
 	newDocsInLastTen(trainningList, testList)
-	'''
+	
 	#test()
-	divideWords(GlobalConfig.trainningData)
+	#divideWords(GlobalConfig.trainningData)
 	#print tt
 	#pass
 	#test()
