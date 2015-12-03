@@ -6,7 +6,7 @@ import numpy
 import jieba
 
 def divideData(allFile, trainningFile, testFile):
-	separateTime = int(time.mktime(time.strptime(GlobalConfig.dataStartTime, '%Y-%m-%d %H:%M:%S')))
+	separateTime = int(time.mktime(time.strptime(GlobalConfig.dataSeparateTime, '%Y-%m-%d %H:%M:%S')))
 	trainningList = []
 	testList = []
 	with open(allFile, "r") as fr:
@@ -31,6 +31,36 @@ def divideData(allFile, trainningFile, testFile):
 			fw.write("\t".join(aLine))
 	return trainningList, testList
 
+def getTimeSep(timeString):
+	return int(time.mktime(time.strptime(timeString, '%Y-%m-%d %H:%M:%S'))) 
+
+def getTimeString(intTime):
+	format = "%Y年%m月%d日 %H:%M:%S"
+	value = time.localtime(intTime)
+	dt = time.strftime(format, value)
+	return dt
+
+def divideDataByDay(allFile):
+	dayNews = [[] for i in range(31)]
+	dayFileName = GlobalConfig.dayFileName
+	startTime = getTimeSep(GlobalConfig.dataStartTime)
+	oneDayTime = GlobalConfig.aDaySeparateTime
+	with open(allFile, "r") as fr:
+		while True:
+			aLine = fr.readline()
+			if aLine == "":
+				break
+			aRecord = aLine.split("\t")
+			theDay = (int(aRecord[2])-startTime)/oneDayTime
+			print getTimeString(int(aRecord[2]))
+			print theDay
+			dayNews[theDay].append(aLine)
+	for i in range(31):
+		with open(dayFileName + str(i+1), "w") as fw:
+			for j in dayNews[i]:
+				fw.write(j) 
+
+
 def divideWords(trainningFile):
 	wordsList = {}
 	stopWord = getStopWord()
@@ -43,8 +73,7 @@ def divideWords(trainningFile):
 			'''
 			if docNum > 10:
 				break 
-			'''
-			
+			'''	
 			aRecord = fr.readline()
 			#aRecord = fr.readline()
 			#aRecord = fr.readline()
@@ -146,9 +175,9 @@ def newDocsInLastTen(trainningList, testList):
 if __name__ == "__main__":
 	#help(sorted)
 	
-	trainningList, testList = divideData(GlobalConfig.allData, GlobalConfig.trainningData, GlobalConfig.testData)
-	newDocsInLastTen(trainningList, testList)
-	
+	#trainningList, testList = divideData(GlobalConfig.allData, GlobalConfig.trainningData, GlobalConfig.testData)
+	#newDocsInLastTen(trainningList, testList)
+	divideDataByDay(GlobalConfig.allData)
 	#test()
 	#divideWords(GlobalConfig.trainningData)
 	#print tt

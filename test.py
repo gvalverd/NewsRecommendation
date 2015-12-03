@@ -1,19 +1,51 @@
 #coding=utf-8
-import numpy
+import numpy, time
+import matplotlib.pyplot as plt
 
 def changeDict(dd, ee, ff):
 	dd['a'] = 1
 	ee = 3
 	ff[0, 0] = 100
 
-def test():
+def getTimeSep(timeString):
+	a = int(time.mktime(time.strptime(timeString, '%Y-%m-%d %H:%M:%S'))) 
+	print a
+	return a
 
+def getTimeString(intTime):
+	format = "%Y年%m月%d日 %H:%M:%S"
+	value = time.localtime(intTime)
+	dt = time.strftime(format, value)
+	return dt
+
+def test():
+	help(plt.bar)
+	'''
+	a = [[0 for j in range(4)] for i in range(3)]
+	print a
+	a[1].append(3)
+	print a
+
+	print getTimeString(1393644411)
+
+	
+	a = getTimeSep("2014-3-1 0:0:0")
+	b = getTimeSep("2014-3-2 0:0:0")
+	print b - a
+	print 24*60*60
+	
+	print 1/3
+	'''
+
+
+	'''
 	aa = numpy.zeros((3,3))
 	aa = aa + 2
 	aa = aa ** 2 
 	aa[0, 1] = 5
 	print aa
 	print max(aa[:,1])
+	'''
 
 	'''
 	dic = {'a': 3}
