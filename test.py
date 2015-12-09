@@ -1,7 +1,10 @@
 #coding=utf-8
-import numpy, time
+import numpy, time, math
 import matplotlib.pyplot as plt
+import pickle
 
+a = 3
+b = 4
 def changeDict(dd, ee, ff):
 	dd['a'] = 1
 	ee = 3
@@ -18,8 +21,125 @@ def getTimeString(intTime):
 	dt = time.strftime(format, value)
 	return dt
 
+def testB():
+	global a
+	print a
+
 def test():
+	a = [1.2, 3.4, 5.6]
+	for i in a:
+		print str(i)
+	'''
+	#help(range)
+	a = [1,3,4]
+	for i in a:
+		print a.index(i)
+	'''
+
+
+	'''
+	a = [["a", 3.4],["b", 4.8], ["c", 1.2]]
+	a = sorted(a, key = lambda x:x[1], reverse=True)
+	print a
+	'''
+
+
+	'''
+	a = [1, 2, 3, 4]
+	print a[:2]
+
+	a = {"a":{1:2},"b":{3:4,4:5}}
+	print "a" in a
+	print len(a)
+	'''
+
+
+	'''
+	a = [[1,2],[3,4]]
+	print [1] in a
+	'''
+
+	'''
+	a = {"a":[1,2]}
+	print a
+	a["a"] = [3,4]
+	print a
+	del a["a"]
+	print a
+	'''
+
+	'''
+	print 3 ** 0.5
+	print 4 ** 2
+
+	a = numpy.zeros((2,3))
+	a[0,:] += 1
+	print a
+	#print numpy.shape(numpy.argwhere(a[0,:]>0))
+	print numpy.shape(numpy.nonzero(a[0,:]))
+	a = len(a[numpy.nonzero(a[1,:])])
+	print a
+	'''
+
+	'''
+	a = [1, 2, 3]
+	b = {1:2,3:4}
+	
+	fw = open("aa", 'w')
+	pickle.dump((a, b), fw)
+	fw.close
+	'''
+
+	'''
+	global a,b
+	print a,b
+	a = 2
+	testB()
+	fr = open("aa", "r")
+	(a, b) = pickle.load(fr)
+	print a, b
+	'''
+
+	'''
+	a = numpy.zeros((2,3))
+	a = a + 3
+	a[1:] -= 1
+	print type(a[1:])
+	print a
+	#print (a[0,:]**2).sum(axis=1)
+	print a[0:]**2
+	print numpy.sum(a[0:]**2, axis=1)**0.5
+	print numpy.dot(a, a.T)
+	'''
+
+
+	'''
+	print math.sqrt(5.0)
+	a = numpy.zeros((1,3))
+	print type(a)
+	a = numpy.mat(a)
+	print type(a)
+	b = numpy.zeros((3,1))
+	b = b + 2
+	a = a + 1
+	print numpy.dot(a,b)
+	print a.T.dot(a)
+	#print a.T * a
+	'''
+
+	'''
+	a = numpy.mat([[1.0,2,3],[2,3,4]])
+	b = numpy.mat([[1,2.1],[2,3],[4,5]])
+	print a * b
+
+	a = raw_input()
+	print a
+	'''
+
+	'''
 	help(plt.bar)
+	'''
+	
 	'''
 	a = [[0 for j in range(4)] for i in range(3)]
 	print a

@@ -69,11 +69,6 @@ def divideWords(trainningFile):
 	docNum = 0
 	with open(trainningFile, "r") as fr:
 		while True:
-			docNum += 1
-			'''
-			if docNum > 10:
-				break 
-			'''	
 			aRecord = fr.readline()
 			#aRecord = fr.readline()
 			#aRecord = fr.readline()
@@ -88,9 +83,13 @@ def divideWords(trainningFile):
 			
 			#print aRecord
 			if aRecord[1] in newsKeyWord.keys():
+				#相同文档，只统计出现一次得情况
+				'''
 				for item in newsKeyWord[aRecord[1]]:
 					wordsList[item][1] = wordsList[item][1] + 1.0
+				'''
 				continue
+			docNum += 1
 			tempWordList = jieba.cut(aRecord[-3].strip() + aRecord[-2].strip(), cut_all=False)
 			keyWord = {}
 			for word in tempWordList:
@@ -101,17 +100,16 @@ def divideWords(trainningFile):
 				#print word
 				tf = keyWord.get(word, 0)
 				if not tf:
-					keyWord[word] = 1.0
+					keyWord[word] = [1.0, 0]
 					
 					if word in wordsList:
 						wordsList[word][1] = wordsList[word][1] + 1.0
 					else:
 						wordsList[word] = [0, 1.0]
 						#wordNo = wordNo + 1 # Record the key word's index
-					
 					#wordsList[word][1] = wordsList.get(word, 0)[1] + 1.0 #doc frequency
 				else:
-					keyWord[word] = tf + 1.0
+					keyWord[word] = [tf[0] + 1.0, 0]
 				#keyWord[word] = keyWord.get(word, 0) + 1.0
 			newsKeyWord[aRecord[1]] = keyWord
 
@@ -170,7 +168,6 @@ def newDocsInLastTen(trainningList, testList):
 	All new test docs:15773
 	All different test docs:1381
 	'''
-
 
 if __name__ == "__main__":
 	#help(sorted)
