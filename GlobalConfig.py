@@ -12,6 +12,10 @@ class GlobalConfig:
 	storeOriginInfo = "../data/NewsRecommendation/NewsRecData/storeInfo"
 	storeVectorInfo = "../data/NewsRecommendation/NewsRecData/storeVector"
 	resultFileName = "../data/NewsRecommendation/NewsRecData/result"
+	activeUserFile = "../data/NewsRecommendation/NewsRecData/dayActiveUser.txt"
+	trainningUserNews = "../data/NewsRecommendation/NewsRecData/trainning-User-News-Click"
+	testUserNews = "../data/NewsRecommendation/NewsRecData/test-User-News-Click"
+	userNewsMatrix = "../data/NewsRecommendation/NewsRecData/UserNewsMatrix"
 	aDaySeparateTime = 86400
 	keyWordGiveupRate = 0.1
 	userNo = 12000

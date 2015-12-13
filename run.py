@@ -8,7 +8,6 @@ keyWords = {}
 newsKeyWords = {}
 userKeyWords = {}
 userNewsMap = []
-# userNewsMap = [("user1","news1"),("user2","news2")]
 oldUserNewsMap = []
 haveSetNews = {}
 # haveSetNews = {"news1":1, "news2":2}
@@ -24,7 +23,7 @@ newsKeyWords = {"news1": {"word1":"tf1","word2":"tf2"}, "new2":{...}}
 改成 newsKeyWords = {"news1": {"word1":["tf1",id1],"word2":["tf2",id2],...}, ...}
 这样的话 可以对空间进行大幅度压缩从90000->500不到
 userKeyWords = {"user1":{"word1":tf-idf1, "word2":tf-idf2}, ...}
-userNewsMap = {["user1":"News1"],["user2":"New2"]}
+userNewsMap = {("user1":"News1"), ("user2":"New2")}
 haveSetNews = {"news1":1, "new2":2, ...}
 haveSetUser = {"user1":1, "user2":2, ...}
 
@@ -107,13 +106,15 @@ def getStatisticInf(filename):
 		return pickle.load(fr)
 
 def storeDivideData():
+	global docNum, keyWords, newsKeyWords, userNewsMap
 	(docNum, keyWords, newsKeyWords, userNewsMap) = DataHandle.divideWords(GlobalConfig.trainningData)
 	storeStatisticInfo((docNum, keyWords, newsKeyWords, userNewsMap), GlobalConfig.storeOriginInfo)
 
 def init():
 	global docNum, keyWords, newsKeyWords, userNewsMap, userKeyWords,\
 	haveSetNews, haveSetUser, newsList, userList, newsVectorsLenghth, userVectorsLenghth
-	(docNum, keyWords, newsKeyWords, userNewsMap) = getStatisticInf(GlobalConfig.storeOriginInfo)	
+	#(docNum, keyWords, newsKeyWords, userNewsMap) = getStatisticInf(GlobalConfig.storeOriginInfo)	
+	storeDivideData()
 	keyWordsNo = len(keyWords)
 	#newsVectors = numpy.zeros((GlobalConfig.newsNo, keyWordsNo))
 	#userVectors = numpy.zeros((GlobalConfig.userNo, keyWordsNo))
@@ -137,6 +138,7 @@ def init():
 	
 
 def calCorrelation(newsNo, userNo):
+	#print "Calculate correlation bettween news %s and user %s" % (newsNo, userNo)
 	global newsKeyWords, userKeyWords, haveSetNews, haveSetUser, newsVectorsLenghth, userVectorsLenghth
 	cosCorrResult = 0.0
 	for word in newsKeyWords[newsNo]:
@@ -144,6 +146,8 @@ def calCorrelation(newsNo, userNo):
 			continue
 		else:
 			cosCorrResult += newsKeyWords[newsNo][word][1] * userKeyWords[userNo][word] 
+	if cosCorrResult == 0:
+		return 0
 	cosCorrResult = cosCorrResult/(newsVectorsLenghth[haveSetNews[newsNo]]**0.5)/(userVectorsLenghth[haveSetUser[userNo]]**0.5)
 	return cosCorrResult
 
@@ -189,7 +193,8 @@ def calAccuracy(day):
 	recommendDataFileName = GlobalConfig.reByDayFileName + str(day)
 	actualDataFileName = GlobalConfig.dayFileName + str(day)
 	
-	recommendData = getFileTwoColumn(GlobalConfig.dayFileName + str(day-1))
+	#recommendData = getFileTwoColumn(GlobalConfig.dayFileName + str(day-1))
+	recommendData = getFileTwoColumn(recommendDataFileName)
 	actualData = getFileTwoColumn(actualDataFileName)
 	#print actualData[:10]
 	#print recommendData[:10]
@@ -218,7 +223,7 @@ def calAccuracy(day):
 	print "Precise rate: %lf" % P
 	print "Recall rate: %lf" % R
 	print "F rate: %lf" % F
-	return (P, R, F)
+	return (correctNum, len(recommendData), len(actualData), P, R, F)
 
 def buildTheDayNews(day):
 	global docNum, keyWords, newsKeyWords, userNewsMap
@@ -272,7 +277,7 @@ def preThreeNews(day, preDay):
 	'''
 	return set(result)
 
-def mostReadTheDay(day, k):
+def mostReadTheDay(day):
 	result = []
 	newsRead = {}
 	with open(GlobalConfig.dayFileName+str(day), "r") as fr:
@@ -282,12 +287,21 @@ def mostReadTheDay(day, k):
 			newsRead[oneNews[1]] = newsRead.get(oneNews[1], 0) + 1
 	#print newsRead["100654630"],newsRead["100640376"],newsRead["100654733"]
 	result = sorted(newsRead.iteritems(), key=lambda x:x[1], reverse=True)
-	#print result[0]
-	if k < len(result):
-		return result[:k]
 	return result
 
-def recommendTheDay(day, k, d):
+def getActiveUser(day):
+	with open(GlobalConfig.activeUserFile, "r") as fr:
+		for i in range(day-21):
+			fr.readline()
+		temp = fr.readline().strip()
+		temp = temp.split("\t")
+		print "The %d day has %d users." % (day, len(temp))
+		result = {}
+		for item in temp:
+			result[item] = 1 - (temp.index(item)*1.0/len(temp))
+	return result
+
+def recommendTheDay(day, k=80, d=1):
 
 	global newsKeyWords, userKeyWords,haveSetNews, haveSetUser, newsList, userList, newsVectorsLenghth, userVectorsLenghth
 	global docNum, keyWords, userNewsMap, oldUserNewsMap
@@ -298,13 +312,19 @@ def recommendTheDay(day, k, d):
 	preLatestNews = preThreeNews(day, d)
 	result = []
 	newUser = 0
-	mostNewsTheDay = mostReadTheDay(day-1, k/10) #头一天最火的新闻
+	mostNewsTheDay = mostReadTheDay(day-1) #头一天最火的新闻
+	userActive = getActiveUser(day)
+
 	for oneUser in theDayUser:
+		#k = max(30, k*userActive[oneUser])
 		if not oneUser in userList:
 			print "User " + str(oneUser) + " is a new user."
-			for item in mostNewsTheDay:
-				result.append([oneUser, item[0]])
 			newUser += 1
+			for item in mostNewsTheDay:
+				if mostNewsTheDay.index(item) <= k:
+					result.append([oneUser, item[0]])
+				else:
+					break
 			continue 
 		print "Recommend data for user: " + str(oneUser) 
 		rating = []
@@ -317,10 +337,11 @@ def recommendTheDay(day, k, d):
 		print rating[:2]
 		'''
 		for item in rating:
-			'''
-			if [oneUser,item[0]] in oldUserNewsMap and rating.index(item) > k/10:
+			
+			if (oneUser,item[0]) in oldUserNewsMap :#and rating.index(item) > k/5:
+				#print "*********"*10
 				continue
-			'''
+			
 			recommendDataNum += 1
 			if recommendDataNum <= k:
 				result.append([oneUser, item[0]])
@@ -336,28 +357,48 @@ def recommendTheDay(day, k, d):
 	buildVectors(len(newsList), len(userList), len(oldUserNewsMap), False)
 	print "All new users: %d\n" % newUser
 
+def checkUserNum():
+	temp = getActiveUser(22)
+	actual = []
+	with open(GlobalConfig.dayFileName+"22", "r") as fr:
+		tempData = fr.readlines()
+		print "len %d" % len(tempData)
+		#print "Actual day %d user num:%d" % (21, )
+		for item in tempData:
+			actual.append(item.strip().split("\t")[0])
+	print len(temp)
+	print len(set(actual))
+	if len(temp) == len(set(actual)):
+		print "Yes check."
+	else:
+		print "No."
+
 def test():
 	
 	result = []
-	#getGlobalInfo()
+	getGlobalInfo()
 	for i in range(21,32):
-		#recommendTheDay(i, 50, 2)
+		recommendTheDay(i, k=40)
 		result.append(calAccuracy(i))
 	resultString = ""
+	sumF = 0
 	for item in result:
+		sumF += item[-1]
 		temp = []
 		for i in item:
 			temp.append(str(i))
 		resultString += "\t".join(temp)+"\n"
-	with open(GlobalConfig.resultFileName+"3", "w") as fw:
+	print sumF/11
+	with open(GlobalConfig.resultFileName+"2", "w") as fw:
 		fw.write(resultString)
 	
 
 if __name__ == "__main__":
 	#storeDivideData()
 	#init()
-	#test()
 	test()
+	#test()
+	#checkUserNum()
 	#print mostReadTheDay(21, 10)
 	#recommendTheDay()
 

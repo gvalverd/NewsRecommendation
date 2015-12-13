@@ -1,7 +1,9 @@
 #coding=utf-8
-import numpy, time, math
+import time, math
 import matplotlib.pyplot as plt
 import pickle
+import numpy as np
+from numpy import linalg as la
 
 a = 3
 b = 4
@@ -25,10 +27,68 @@ def testB():
 	global a
 	print a
 
+def testFloat(a):
+	try:
+		float(a)
+		return True
+	except:
+		return False
+
 def test():
+	a = np.mat(np.zeros((4, 5)))
+	a[0, :] += 1
+	print a
+	print np.sum(a[1,:])
+	U, Sigma, VT = la.svd(a)
+	print U,Sigma,VT
+	#Test list an tuple
+	'''
+	print "******"*10
+	a = [(1,2),(3,4)]
+	print [1,2] in a
+	'''
+
+
+	'''
+	#Test get submatrix
+	a = np.mat(np.zeros((3,4)))
+	print a
+	a = a[:2, :3]
+	print a
+	'''
+
+
+	'''
+	Test format string 
+
+	a = "ldfjl"
+	a += "aba %5s %4s" % (1223, 13)
+	print a
+	a = np.mat(np.zeros((3,4)))
+	print a
+	a[0,1] += 1
+	a[1,2] += 1
+	print np.nonzero(a)
+	print np.nonzero(a)[0][0, 0]
+	print np.nonzero(a)[1][0, 0]
+	'''
+
+
+	'''
+	#print type(eval("a2.33")) == float
+	print testFloat("1.33")
+	print testFloat("a.32")
+	print ("adewgf").isalnum()
+	print len("我.")
+	'''
+
+	'''
 	a = [1.2, 3.4, 5.6]
 	for i in a:
 		print str(i)
+	'''
+
+
 	'''
 	#help(range)
 	a = [1,3,4]

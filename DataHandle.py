@@ -60,6 +60,12 @@ def divideDataByDay(allFile):
 			for j in dayNews[i]:
 				fw.write(j) 
 
+def testFloat(a):
+	try:
+		float(a)
+		return True
+	except:
+		return False
 
 def divideWords(trainningFile):
 	wordsList = {}
@@ -79,7 +85,7 @@ def divideWords(trainningFile):
 			if (aRecord[-2].strip() == "NULL" and aRecord[-1].strip() == "NULL"):
 				continue
 			#userNewsMap[aRecord[0]] = aRecord[1] # A user can read lots of news can't 
-			userNewsMap.append((aRecord[0], aRecord[1]))
+			userNewsMap.append([aRecord[0], aRecord[1]])
 			
 			#print aRecord
 			if aRecord[1] in newsKeyWord.keys():
@@ -90,12 +96,15 @@ def divideWords(trainningFile):
 				'''
 				continue
 			docNum += 1
-			tempWordList = jieba.cut(aRecord[-3].strip() + aRecord[-2].strip(), cut_all=False)
+			tempWordList = jieba.cut(aRecord[-3].strip() + aRecord[-2].strip(), cut_all=True)
 			keyWord = {}
 			for word in tempWordList:
 				word = word.strip().encode("utf-8")
 				#print word
-				if word.isdigit() or word == "" or word in stopWord:
+				# word.isalnum() 英文文章
+				if word.isalnum() or word.isdigit() or word == "" or word in stopWord:
+					continue
+				if testFloat(word) or len(word)<=3:
 					continue
 				#print word
 				tf = keyWord.get(word, 0)
@@ -133,6 +142,11 @@ def divideWords(trainningFile):
 		wordsList[word][0] = wordNo
 		wordNo += 1
 	print "Key words num: %d" % len(wordsList)
+	wordString = ""
+	for i in wordsList:
+		wordString += str(i)+"\t"
+	with open("wordList", "w") as fw:
+		fw.write(wordString)
 	print "News lenth: %d " % len(userNewsMap)
 
 	#print newsKeyWord["100649537"]
@@ -174,9 +188,11 @@ if __name__ == "__main__":
 	
 	#trainningList, testList = divideData(GlobalConfig.allData, GlobalConfig.trainningData, GlobalConfig.testData)
 	#newDocsInLastTen(trainningList, testList)
-	divideDataByDay(GlobalConfig.allData)
+	#divideDataByDay(GlobalConfig.allData)
+	print getTimeString(1394350095)
+
 	#test()
-	#divideWords(GlobalConfig.trainningData)
+	divideWords(GlobalConfig.trainningData)
 	#print tt
 	#pass
 	#test()
